@@ -1,9 +1,105 @@
 <html>
 <head>
+	<!-- jQuery -->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+	<!-- Knockout.js -->
+	<script type='text/javascript' src='http://cdnjs.cloudflare.com/ajax/libs/knockout/3.1.0/knockout-min.js'></script>
+	
+	<!-- Knockout Mapping -->
+	<script type='text/javascript' src='http://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.js'></script>
+
+	<!-- Twitter Bootstrap -->	
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+	
 	<title>2048</title>
 </head>
 
+<style type="text/css">
+table {
+	width: 500px;
+	table-layout: fixed;
+	border: 10px solid grey;
+	padding: 0px;
+	spacing: 0px;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	-moz-border-radius-bottomleft: 5px;
+	-webkit-border-bottom-left-radius: 5px;
+	border-bottom-left-radius: 5px;
+	-moz-border-radius-bottomright: 5px;
+	-webkit-border-bottom-right-radius: 5px;
+	border-bottom-right-radius: 5px;
+	-moz-border-radius-topright: 5px;
+	-webkit-border-top-right-radius: 5px;
+	border-top-right-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	-webkit-border-top-left-radius: 5px;
+	border-top-left-radius: 5px;
+}
+td { 
+	border: 10px solid grey;
+    padding: 10px;
+    font-size: 20pt;
+    height: 100px;
+    min-height: 100px;
+}
+</style>
+
 <body>
-	<h1>2048</h1>
+	<h1>2048 in Haskell!</h1>
+	
+	<span>Progress: </span><span data-bind="text: gameProgress"></span>
+	<p></p>
+	<span>Score: </span><span data-bind="text: score"></span>
+
+	<table class = "grid">
+	    <tbody data-bind="foreach: grid">
+	        <tr data-bind="foreach: $data">
+	            <td data-bind="text: (tile() === '0' ? '' : tile()), style: { backgroundColor: getTileColor(tile()) }"></td>
+	        </tr>
+	    </tbody>
+	</table>
+
+	<script type="text/javascript">
+		var viewModel = null;
+		updateFromServer();
+
+		function updateFromServer () {
+			$.getJSON("/gameState")
+			.done(function(data) {
+				if(viewModel){
+					ko.mapping.fromJS(data, viewModel);
+				}
+				else{
+					viewModel = ko.mapping.fromJS(data);
+					ko.applyBindings(viewModel);
+					//console.log(viewModel);
+				}
+
+				setTimeout(updateFromServer, 2000);
+			}).fail(function() {
+				console.log("Problem getting update from server...");
+			});
+		}
+
+		function getTileColor(tile){
+			console.log(tile);
+        	if(tile == 2) 			{ return "rgb(238,228,218)"; }
+            else if(tile == 4) 		{ return "rgb(237, 224, 200)"; }
+            else if(tile == 8) 		{ return "rgb(242, 177, 121)"; }
+            else if(tile == 16) 	{ return "rgb(245, 149, 99)"; }
+            else if(tile == 32) 	{ return "rgb(246, 124, 95)"; }
+            else if(tile == 64 ) 	{ return "rgb(246, 94, 59)"; }
+            else if(tile == 128 ) 	{ return "rgb(237, 207, 114)"; }
+            else if(tile == 256 ) 	{ return "rgb(237, 204, 97)"; }
+            else if(tile == 512 ) 	{ return "rgb(237, 200, 80)"; }
+            else if(tile == 1024 ) 	{ return "rgb(237, 197, 63)"; }
+            else if(tile == 2048 ) 	{ return "rgb(237, 194, 46)"; }
+            else 					  return "rgba(238, 228, 218, 0.35)"; // empty tile
+		}
+	</script>
 </body>
 </html>

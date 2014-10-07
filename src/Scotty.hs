@@ -21,13 +21,17 @@ main = scotty 3000 $ do
     g <- liftIO System.Directory.getCurrentDirectory
     html $ pack $ g
 
-  get "/gameState" $ do  
-    let x = defaultGame
+  get "/gameState" $ do 
+    g <- liftIO newStdGen
+    let r = randomFloats g
+    let x = startNewGame r
     json $ (x :: GameState)
 
   get "/" $ file "static/index.html"
   
   get "/favicon.ico" $ file "static/favicon.ico"
+
+  get "/knockout.mapping.js" $ file "static/js/knockout.mapping.js"
 
   get "/:word" $ do
     beam <- param "word"

@@ -88,7 +88,7 @@ gameLost g = let
         ]
 
 gameWon :: Grid -> Bool -- checks if a 2048 tile present in the grid
-gameWon (Grid g) = 0 /= (length $ filter (\t -> t == Number 2048) $ concat g)
+gameWon (Grid g) = 0 /= (length $ filter (\t -> t == Num 2048) $ concat g)
 
 lose :: GameState -> GameState -- set a game to be at game over
 lose gameState = gameState { gameProgress = GameOver }
@@ -107,7 +107,7 @@ tile2Probability = 0.9
 
 newTile :: Float -> Tile -- based on a float that will be random, 
                         -- return a new tile
-newTile x = if (x < tile2Probability) then (Number 2) else (Number 4)
+newTile x = if (x < tile2Probability) then (Num 2) else (Num 4)
 
 emptyTiles :: Grid -> [(Int, Int)] -- a list of the coordinates of the empty 
                                   -- tiles in a grid

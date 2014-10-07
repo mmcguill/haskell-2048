@@ -7,10 +7,10 @@ import Data.List
 import GHC.Generics
 import Data.Aeson hiding (Number)
 
-data Tile = Number Int | Empty deriving (Eq, Show, Generic) -- a tile can either contain an int, or be empty
+data Tile = Num Int | Empty deriving (Eq, Show, Generic) -- a tile can either contain an int, or be empty
 
 instance ToJSON Tile where
- toJSON x = object [ "tile" .= (show $  x)]
+ toJSON x = object [ "tile" .= (show $ tileToInt x)]
 instance FromJSON Tile
 
 data Grid = Grid [[Tile]]  deriving (Eq, Show, Generic) -- a grid is a list of lists of tiles
@@ -56,13 +56,13 @@ setTile (i, j) (Grid g) t = let
 
 tileToInt :: Tile -> Int -- convert a tile to the int it represents
 tileToInt t = case t of
-    Number n -> n
+    Num n -> n
     otherwise -> 0
 
 intToTile :: Int -> Tile -- convert an int to a tile representing it
 intToTile n = case n of
     0 -> Empty
-    otherwise -> Number n
+    otherwise -> Num n
 
 tilesWithCoordinates :: Grid -> [(Tile,Int,Int)] -- a list of the tiles in a grid 
                                                 -- with their coordinates
