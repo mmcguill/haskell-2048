@@ -8,60 +8,127 @@
 	
 	<!-- Knockout Mapping -->
 	<script type='text/javascript' src='http://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.js'></script>
-
-	<!-- Twitter Bootstrap -->	
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 	
 	<title>2048</title>
 </head>
 
 <style type="text/css">
+body {
+	font-family: "PT Sans", Helvetica, Arial, sans-serif;
+	color: #776E65;
+}
+h1 {
+	font-size: 55px;
+	font-weight: bold;
+	margin: 0px;
+	float: left;
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
 table {
+	border-spacing: 13px;
+	border-collapse: separate;
 	width: 500px;
+	height: 500px;
 	table-layout: fixed;
-	border: 10px solid grey;
-	padding: 0px;
-	spacing: 0px;
-	border-spacing: 0px;
-	border-collapse: collapse;
-	-moz-border-radius-bottomleft: 5px;
-	-webkit-border-bottom-left-radius: 5px;
-	border-bottom-left-radius: 5px;
-	-moz-border-radius-bottomright: 5px;
-	-webkit-border-bottom-right-radius: 5px;
-	border-bottom-right-radius: 5px;
-	-moz-border-radius-topright: 5px;
-	-webkit-border-top-right-radius: 5px;
-	border-top-right-radius: 5px;
-	-moz-border-radius-topleft: 5px;
-	-webkit-border-top-left-radius: 5px;
-	border-top-left-radius: 5px;
 }
 td { 
-	border: 10px solid grey;
-    padding: 10px;
-    font-size: 20pt;
-    height: 100px;
-    min-height: 100px;
+    height: 106px;
+    min-height: 106px;
+    
+    width: 106px;
+    min-width: 106px;
+    
+    text-align: center;
+    vertical-align: middle;
+    color: rgb(119, 110, 101);
+	font-family: 'Helvetica Neue',Arial,sans-serif;
+	font-size: 55px;
+	font-weight: bold;
 }
+#game-frame {
+	width: 560px;
+	margin: auto;
+	background-color: #FAF8EF;
+}
+#game-container {
+	width: 500px;
+	margin: auto;
+}
+#top{ }
+
+#sidePanel {
+	float: right;
+}
+#newGameButton {
+	text-align: center;
+	background-color: #8F7A66;
+	color: #FFF;
+	border-radius: 5px;
+	padding: 10px;
+	margin-top: 10px;
+	width: 100px;
+	cursor: pointer;
+}
+#score {
+	text-align: center;
+	width: 100px;
+	background-color: #BBADA0;
+	color: #FFF;
+	border-radius: 5px;
+	padding: 10px;
+	margin-top: 20px;
+}
+
+#description {
+	clear: left;
+	font-size: 14px;
+}
+
+#byline {
+	font-size: 14px;
+	font-weight: bold;
+	text-align: right;
+	padding-top: 5px;
+	padding-right: 2px;
+	padding-bottom: 2px;
+}
+
+#grid {
+	margin-top: 40px;
+	background-color: #bbad9f;
+	width: 500px;
+	height: 500px;
+}
+
 </style>
 
 <body>
-	<h1>2048 in Haskell!</h1>
-	
-	<span>Progress: </span><span data-bind="text: gameProgress"></span>
-	<p></p>
-	<span>Score: </span><span data-bind="text: score"></span>
+	<div id ="game-frame">
+		<div id="game-container">
+			<div id = "top">
+				<h1>2048</h1>
+				<div id="sidePanel">
+					<div id="score">SCORE</br /><span data-bind="text: score"></span></div>
+					<div id="newGameButton">New Game</div>
+				</div>
+				<p id="description">Join the numbers and get to the 2048 tile!</p>
+			</div>
 
-	<table class = "grid">
-	    <tbody data-bind="foreach: grid">
-	        <tr data-bind="foreach: $data">
-	            <td data-bind="text: (tile() === '0' ? '' : tile()), style: { backgroundColor: getTileColor(tile()) }"></td>
-	        </tr>
-	    </tbody>
-	</table>
+			<div id="grid">
+				<table>
+				    <tbody data-bind="foreach: grid">
+				        <tr data-bind="foreach: $data">
+				            <td data-bind="text: (tile() === '0' ? '' : tile()), style: { backgroundColor: getTileColor(tile()) }"></td>
+				        </tr>
+				    </tbody>
+				</table>
+			</div>
+			<div id= "byline">
+				<p>Mark McGuill</p>
+			</div>
+		</div>
+	</div>
 
 	<script type="text/javascript">
 		var viewModel = null;
