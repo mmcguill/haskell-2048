@@ -50,6 +50,7 @@ td {
 	width: 560px;
 	margin: auto;
 	background-color: #FAF8EF;
+	border-radius: 8px;
 }
 #game-container {
 	width: 500px;
@@ -69,6 +70,15 @@ td {
 	margin-top: 10px;
 	width: 100px;
 	cursor: pointer;
+
+	/* Turn off text selection to make this feel more like a button */
+
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 #score {
 	text-align: center;
@@ -103,14 +113,14 @@ td {
 
 </style>
 
-<body>
+<body> <!--  data-bind="event: { keypress: onGameKeyPress }" -->
 	<div id ="game-frame">
 		<div id="game-container">
 			<div id = "top">
-				<h1>2048</h1>
+				<h1>2048-Haskell</h1>
 				<div id="sidePanel">
 					<div id="score">SCORE</br /><span data-bind="text: score"></span></div>
-					<div id="newGameButton">New Game</div>
+					<div id="newGameButton" data-bind="click: startNewGame">New Game</div>
 				</div>
 				<p id="description">Join the numbers and get to the 2048 tile!</p>
 			</div>
@@ -135,21 +145,62 @@ td {
 		updateFromServer();
 
 		function updateFromServer () {
-			$.getJSON("/gameState")
+			makeRestCallAndUpdateViewModel("/gameState");
+		}
+
+		function startNewGame() {
+			makeRestCallAndUpdateViewModel("/newGame");
+		}
+
+		function onGameKeyPress(data, event){
+			console.log(data);
+			console.log(event);
+
+			if(event.charCode === 37){
+				makeRestCallAndUpdateViewModel("/moveLeft");
+			}
+			if(event.charCode === 97){
+				makeRestCallAndUpdateViewModel("/newGame");
+			}
+		}
+
+		function makeRestCallAndUpdateViewModel(operation){
+			$.getJSON(operation)
 			.done(function(data) {
+				updateViewModelWithJsonData(data);
+			}).fail(function() {
+				console.log("Problem getting update from server for [" + operation + "] operation...");
+			});
+		}
+
+		function updateViewModelWithJsonData(data) {
 				if(viewModel){
 					ko.mapping.fromJS(data, viewModel);
 				}
 				else{
 					viewModel = ko.mapping.fromJS(data);
 					ko.applyBindings(viewModel);
-					//console.log(viewModel);
-				}
+					
+					// We have good state, so let's initialize the key bindings so play can being
 
-				setTimeout(updateFromServer, 2000);
-			}).fail(function() {
-				console.log("Problem getting update from server...");
-			});
+					$('body').keydown(function(e){
+					    switch (e.which) {
+					        case 40:
+					            makeRestCallAndUpdateViewModel("/moveDown");
+					            break;
+					        case 38:
+					            makeRestCallAndUpdateViewModel("/moveUp");
+					            break;
+					        case 37:
+					            makeRestCallAndUpdateViewModel("/moveLeft");
+					            break;
+					        case 39:
+					            makeRestCallAndUpdateViewModel("/moveRight");
+					            break;
+					        }      
+					});
+
+				}
 		}
 
 		function getTileColor(tile){

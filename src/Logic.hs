@@ -4,6 +4,7 @@ module Logic where
 import Prelude (Eq, (==), Int, ($) , filter, (/=), take, map, sum, (.), repeat, (++), concat, length, fst, snd, (>), id, (+), Bool, all, and, Float, (<), (!!), floor, (*), fromIntegral)
 import Data.Maybe
 import GameModel
+import GameModel as GM
 
 groupedByTwo :: Eq a => [a] -> [[a]] -- takes a list of values and 'slides' them to 
                                 -- the left, joining in lists pairs of adjacent
