@@ -31,8 +31,7 @@ move d s g = do
 main :: IO ()
 main = do 
   s <- newMVar defaultGame
-  --port <- getEnv "PORT"
-  x <- lookupEnv "myvariable"
+  x <- lookupEnv "PORT"
   let port = fromMaybe "3000" x
 
   scotty (read port) $ do
