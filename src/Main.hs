@@ -14,6 +14,7 @@ import GameModel as GM
 import Logic
 import Data.Text.Lazy
 import Control.Concurrent
+import Paths_Haskell2048
 
 randomFloats :: RandomGen g => g -> [Float]
 randomFloats g = randoms (g) :: [Float]
@@ -67,10 +68,14 @@ main = do
 
     -- Static File Serving
 
-    get "/" $ file "static/index.html"
-    get "/favicon.ico" $ file "static/favicon.ico"
-    get "/knockout.mapping.js" $ file "static/js/knockout.mapping.js"
-
+    get "/" $ do 
+      foo <- liftIO $ getDataFileName "src/static/index.html"  
+      file foo
+    
+    get "/favicon.ico" $ do
+      foo <- liftIO $ getDataFileName "src/static/favicon.ico"  
+      file foo
+    
     -- Debug...
 
     get "/:word" $ do
