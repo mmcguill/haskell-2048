@@ -15,6 +15,8 @@ import Logic
 import Data.Text.Lazy
 import Control.Concurrent
 import Paths_Haskell2048
+import System.Environment
+import Data.Maybe (fromMaybe)
 
 randomFloats :: RandomGen g => g -> [Float]
 randomFloats g = randoms (g) :: [Float]
@@ -29,8 +31,11 @@ move d s g = do
 main :: IO ()
 main = do 
   s <- newMVar defaultGame
-      
-  scotty 3000 $ do
+  --port <- getEnv "PORT"
+  x <- lookupEnv "myvariable"
+  let port = fromMaybe "3000" x
+
+  scotty (read port) $ do
     middleware logStdoutDev
 
     get "/gameState" $ do 
