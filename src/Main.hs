@@ -76,10 +76,12 @@ main = do
 
     get "/" $ do 
       foo <- liftIO $ getDataFileName "src/static/index.html"  
+      setHeader "Content-Type" "text/html; charset=utf-8"
       file foo
     
     get "/favicon.ico" $ do
       foo <- liftIO $ getDataFileName "src/static/favicon.ico"  
+      setHeader "Content-Type" "image/x-icon"
       file foo
     
     -- Debug...
