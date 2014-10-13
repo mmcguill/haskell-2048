@@ -7,4 +7,5 @@ import System.FilePath
 getDataFileName :: FilePath -> IO FilePath
 getDataFileName a = do 
 	putStrLn "Yoyo!!"
-	return $ "../" ++ a -- Paths will be relative to root dir though we will be in src dir for development...
+	return $ a
+	--return $ "../" ++ a -- Paths will be relative to root dir though we will be in src dir for development...

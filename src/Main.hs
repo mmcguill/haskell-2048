@@ -34,6 +34,8 @@ main = do
   x <- lookupEnv "PORT"
   let port = fromMaybe "3000" x
 
+  putStrLn "Starting Haskell2048!!"
+
   scotty (read port) $ do
     middleware logStdoutDev
 
