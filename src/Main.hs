@@ -73,11 +73,11 @@ main = do
     -- Static File Serving
 
     get "/" $ do 
-      foo <- liftIO $ getDataFileName "src/static/index.html"  
+      foo <- liftIO $ getDataFileName "static/index.html"  
       file foo
     
     get "/favicon.ico" $ do
-      foo <- liftIO $ getDataFileName "src/static/favicon.ico"  
+      foo <- liftIO $ getDataFileName "static/favicon.ico"  
       file foo
     
     -- Debug...
