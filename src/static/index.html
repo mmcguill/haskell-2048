@@ -113,7 +113,7 @@ td {
 
 </style>
 
-<body> <!--  data-bind="event: { keypress: onGameKeyPress }" -->
+<body> 
 	<div id ="game-frame">
 		<div id="game-container">
 			<div id = "top">
@@ -152,18 +152,6 @@ td {
 			makeRestCallAndUpdateViewModel("/newGame");
 		}
 
-		function onGameKeyPress(data, event){
-			console.log(data);
-			console.log(event);
-
-			if(event.charCode === 37){
-				makeRestCallAndUpdateViewModel("/moveLeft");
-			}
-			if(event.charCode === 97){
-				makeRestCallAndUpdateViewModel("/newGame");
-			}
-		}
-
 		function makeRestCallAndUpdateViewModel(operation){
 			$.getJSON(operation)
 			.done(function(data) {
@@ -181,7 +169,7 @@ td {
 					viewModel = ko.mapping.fromJS(data);
 					ko.applyBindings(viewModel);
 					
-					// We have good state, so let's initialize the key bindings so play can being
+					// We have good state, so let's initialize the key bindings so play can begin
 
 					$('body').keydown(function(e){
 					    switch (e.which) {
@@ -199,12 +187,11 @@ td {
 					            break;
 					        }      
 					});
-
 				}
 		}
 
 		function getTileColor(tile){
-			console.log(tile);
+			//console.log(tile);
         	if(tile == 2) 			{ return "rgb(238,228,218)"; }
             else if(tile == 4) 		{ return "rgb(237, 224, 200)"; }
             else if(tile == 8) 		{ return "rgb(242, 177, 121)"; }
