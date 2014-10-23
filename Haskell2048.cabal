@@ -6,22 +6,20 @@ version:             0.1.0.0
 -- synopsis:            
 -- description:         
 -- license:             
--- license-file:        LICENSE
+license-file:        LICENSE
 author:              Mark Mc
 maintainer:          mmcguill@gmail.com
 -- copyright:           
 -- category:            
 build-type:          Simple
 extra-source-files:  README.md
-data-files:          src/static/index.html, src/static/favicon.ico
-
+data-files:          src/static/index.html, src/static/favicon.ico, src/static/stylesheet.css
 cabal-version:       >=1.10
 
 executable Haskell2048
   main-is:             Main.hs
-
   other-modules:       Paths_Haskell2048       
-  other-extensions:    OverloadedStrings, DeriveGeneric, NoImplicitPrelude
-  build-depends:       base >=4.6 && <4.8, aeson >=0.7 && <0.8, scotty >=0.8 && <0.9, wai-middleware-static >=0.6 && <0.7, wai-extra >=3.0 && <3.1, random >=1.0 && <1.1, mtl >=2.1 && <2.2, directory >=1.2 && <1.3, text >=1.1 && <1.2, filepath 
+  other-extensions:    OverloadedStrings, DeriveGeneric, NoImplicitPrelude, QuasiQuotes, TemplateHaskell, TypeFamilies, MultiParamTypeClasses
+  build-depends:       base >=4.7 && <4.8, aeson >=0.7 && <0.8, text >=1.1 && <1.2, random >=1.0 && <1.1, yesod >=1.2 && <1.3, stm >=2.4 && <2.5, containers >=0.5 && <0.6, filepath >=1.3 && <1.4
   hs-source-dirs:      src
   default-language:    Haskell2010

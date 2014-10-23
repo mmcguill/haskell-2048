@@ -46,8 +46,8 @@ mkYesod "App" [parseRoutes|
 
 
 instance Yesod App where
-    -- Make the session timeout 1 minute so that it's easier to play with or a day...
-    makeSessionBackend _ = do
+  -- Make the session timeout 1 minute so that it's easier to play with or a day...
+  makeSessionBackend _ = do
     backend <- defaultClientSessionBackend 1440 "session.aes"
     return $ Just backend
 
