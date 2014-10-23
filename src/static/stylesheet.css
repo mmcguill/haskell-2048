@@ -80,10 +80,19 @@ td {
 	font-size: 14px;
 }
 
+
 #byline {
 	font-size: 14px;
 	font-weight: bold;
-	text-align: right;
+	padding-top: 5px;
+	padding-right: 2px;
+	padding-bottom: 2px;
+}
+
+#game-id {
+	font-size: 14px;
+	font-weight: bold;
+	text-align: left;
 	padding-top: 5px;
 	padding-right: 2px;
 	padding-bottom: 2px;
