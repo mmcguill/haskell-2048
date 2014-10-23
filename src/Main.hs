@@ -5,27 +5,19 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 module Main where
 
-import Web.Scotty
-import Network.Wai.Middleware.Static
-import Network.Wai.Middleware.RequestLogger
 import System.Random
-import Data.Monoid (mconcat)
-import Control.Monad.Trans
-import System.Directory
 import GameModel
 import GameModel as GM
 import Logic
-import Data.Text.Lazy
 import Paths_Haskell2048
 import System.Environment
-import Data.Maybe (fromMaybe)
 import Yesod
-import Control.Concurrent
 import Control.Concurrent.STM
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe
-import qualified Data.Text as T
+import Data.Text (Text, pack)
+import qualified Data.Text as Text
 
 randomFloats :: RandomGen g => g -> [Float]
 randomFloats g = randoms (g) :: [Float]
@@ -37,12 +29,12 @@ move d s g = do
       liftIO $ putMVar s delta
       return delta
 
-data App = App (TVar (Map T.Text GameState))
-
+-- TODO can we make the static routes just work? with Heroku?
 mkYesod "App" [parseRoutes|
-/             HomeR GET 
-/favicon.ico  FaviconR GET
-/gameState    GameStateR GET
+/               HomeR GET 
+/favicon.ico    FaviconR GET
+/stylesheet.css StylesheetR GET
+/gameState      GameStateR GET
 |]
 
 instance Yesod App where
@@ -62,40 +54,68 @@ getFaviconR = do
   foo <- liftIO $ getDataFileName "src/static/favicon.ico" 
   sendFile "image/x-icon" foo
 
+getStylesheetR :: Handler Html
+getStylesheetR = do
+  foo <- liftIO $ getDataFileName "src/static/stylesheet.css" 
+  sendFile "text/css" foo
 
-getGameForUser = do
-  gameId <- lookupSession "gameId"
-  case gameId of
-    Just gid -> return gid
-    Nothing  -> do
-      App tstate <- getYesod
-      let x = "the_key"
-      liftIO . atomically $ do
-        modifyTVar tstate $ \ map -> Map.insert x defaultGame map
-      setSession "gameId" x
-      return x
+---------------------------------------------------------------
+--  defaultLayout [whamlet||]
+--getHomeR  = defaultLayout [whamlet|<a href=@{Page1R}>Go to page 1!|] 
+
+
+getNextId :: App -> STM Int
+getNextId (App tnextId _) = do
+  nextId <- readTVar tnextId
+  writeTVar tnextId $ nextId + 1
+  return nextId
+
+getNextIdAsText :: App -> Handler Text
+getNextIdAsText app = do
+  ident <- liftIO $ atomically $ getNextId app
+  let key = pack $ show ident
+  return key 
+
+addGame :: App -> Handler Text
+addGame app@(App _ tstore) = do
+    key <- getNextIdAsText app
+    let entry = (key, (defaultGame key))
+    liftIO . atomically $ do
+        modifyTVar tstore $ \ ops -> entry : ops
+    return $ fst entry
+
+getById :: Text -> Handler GameState
+getById ident = do
+    App _ tstore <- getYesod
+    operations <- liftIO $ readTVarIO tstore
+    case lookup ident operations of
+      Nothing -> notFound
+      Just game -> return game
 
 getGameStateR :: Handler Value
 getGameStateR = do
-  gameKey <- getGameForUser
-  App tstate <- getYesod
-  gamesMap <- liftIO $ atomically $ readTVar $ tstate
-  let game = (Map.lookup gameKey gamesMap)
-  returnJson (fromJust(game) :: GameState)
+  app <- getYesod
+  gameId <- lookupSession "gameId"
+  case gameId of
+    Just gid -> do
+      game <- (getById gid)
+      returnJson (game :: GameState)
+    Nothing  -> do
+      key <- addGame app
+      setSession "gameId" key
+      game <- (getById key)
+      returnJson (game :: GameState)
 
-
---  defaultLayout [whamlet||]
-
---getHomeR  = defaultLayout [whamlet|<a href=@{Page1R}>Go to page 1!|] 
+data App = App (TVar Int) (TVar [(Text, GameState)])
 
 main :: IO ()
 main = do 
-  games <- atomically $ newTVar Map.empty
-  x <- lookupEnv "PORT"
-  let port = fromMaybe "3020" x
+  maybePort <- lookupEnv "PORT"
+  let port = fromMaybe "3032" maybePort
 
-  putStrLn ("Starting Haskell2048 on Port: " ++ port)
-  warp (read(port)) (App games)
+  tident <- atomically $ newTVar 0
+  tgames <- atomically $ newTVar []
+  warp (read(port)) (App tident tgames)
 
   --  get "/newGame" $ do
   --    g <- liftIO newStdGen
@@ -124,18 +144,4 @@ main = do
   --    g <- liftIO newStdGen
   --    delta <- liftIO $ move GM.Down s g
   --    json $ (delta :: GameState)
-    
-  --  -- Debug...
-
-  --  get "/:word" $ do
-  --    beam <- param "word"
-  --    html $ mconcat ["<h1>Last Resort: [", beam , "]</h1>"]
-
-    -- Scrap
-
-    --get "/pwd" $ do
-    --  g <- liftIO $ System.Directory.getCurrentDirectory
-    --  html $ pack $ g
-
-        --g <- liftIO newStdGen
-        --let beam = L.pack $ show $ head $ randomFloats g
+   

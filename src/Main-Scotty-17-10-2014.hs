@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+4{-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
@@ -17,6 +17,10 @@ import Control.Concurrent
 import Paths_Haskell2048
 import System.Environment
 import Data.Maybe (fromMaybe)
+
+
+f $ g x
+
 
 randomFloats :: RandomGen g => g -> [Float]
 randomFloats g = randoms (g) :: [Float]
@@ -40,7 +44,7 @@ main = do
     middleware logStdoutDev
 
     get "/gameState" $ do 
-      x <- liftIO $ takeMVar s
+      x <- liftIO $ takeMVar 
       liftIO $ putMVar s x
       json $ (x :: GameState)
 

@@ -6,6 +6,8 @@ module GameModel where
 import Data.List
 import GHC.Generics
 import Data.Aeson hiding (Number)
+import Data.Text (Text, pack)
+import qualified Data.Text as Text
 
 data Tile = Num Int | Empty deriving (Eq, Show, Generic) -- a tile can either contain an int, or be empty
 
@@ -22,7 +24,8 @@ instance FromJSON Progress
 instance ToJSON Progress                                          -- at game over, or won
 
 data GameState = GameState { -- defines the various properties of a game state:
-    grid :: Grid              -- the grid of tiles
+    gameid :: Text                -- the app wide game id
+  , grid :: Grid              -- the grid of tiles
   , score :: Int              -- the score
   , gameProgress :: Progress  -- the progress of the game (in progress, 
                             -- game over etc.)
@@ -86,9 +89,10 @@ emptyGrid = Grid
 	$ take gridSize 
 	$ repeat Empty
 
-defaultGame :: GameState -- the default starting game state:
-defaultGame = GameState { 
-    grid = emptyGrid            -- an empty grid
+defaultGame :: Text -> GameState -- the default starting game state:
+defaultGame gid = GameState { 
+    gameid = gid
+  , grid = emptyGrid            -- an empty grid
   , score = 0                   -- initial score is zero
   , gameProgress = InProgress   -- the game is in progress
     }

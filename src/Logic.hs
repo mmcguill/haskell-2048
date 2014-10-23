@@ -5,6 +5,8 @@ import Prelude (Eq, (==), Int, ($) , filter, (/=), take, map, sum, (.), repeat, 
 import Data.Maybe
 import GameModel
 import GameModel as GM
+import Data.Text (Text, pack)
+import qualified Data.Text as Text
 
 groupedByTwo :: Eq a => [a] -> [[a]] -- takes a list of values and 'slides' them to 
                                 -- the left, joining in lists pairs of adjacent
@@ -64,7 +66,8 @@ slideGameState direction gameState =
    let newGridScore = slideGrid direction (grid gameState)
        in if (fst newGridScore == (grid gameState)) then gameState else
         GameState {  
-            grid = fst newGridScore
+          gameid = (gameid gameState)
+          , grid = fst newGridScore
           , score = (score gameState) + snd newGridScore
           , gameProgress = InProgress   -- the game is in progress
         } 
@@ -142,19 +145,19 @@ placeRandomTile float1 float2 gameState =
             	$ newTile float2
         }
 
-newGame :: [Float] -> GameState -- generate a new game with two random 
+newGame :: Text -> [Float] -> GameState -- generate a new game with two random 
                              -- starting tiles
-newGame input = 
+newGame gid input = 
     placeRandomTile (input !! 0) (input !! 1)
  	$ placeRandomTile (input !! 2) (input !! 3)
-	$ defaultGame
+	$ defaultGame gid
 
 {------------------------------------------------------------------------------
                           Game stepping function
 ------------------------------------------------------------------------------}
 
-startNewGame :: [Float] -> GameState
-startNewGame r = newGame r
+startNewGame :: Text -> [Float] -> GameState
+startNewGame gid r = newGame gid r
 
 stepGame :: Direction -> [Float] -> GameState -> GameState -- game stepper that is called every
                                            -- time the input changes
