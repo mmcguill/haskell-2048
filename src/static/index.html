@@ -79,15 +79,25 @@
 		}
 
 		function updateFromServer () {
-			makeRestCallAndUpdateViewModel("/gameState");
+			getAndUpdateViewModel("/gameState");
 		}
 
 		function startNewGame() {
-			makeRestCallAndUpdateViewModel("/newGame");
+			postAndUpdateViewModel("/newGame");
 		}
 
-		function makeRestCallAndUpdateViewModel(operation){
+		function getAndUpdateViewModel(operation){
 			$.getJSON(operation)
+			.done(function(data) {
+				updateViewModelWithJsonData(data);
+				updateGameWonLostBanner();
+			}).fail(function() {
+				console.log("Problem getting update from server for [" + operation + "] operation...");
+			});
+		}
+
+		function postAndUpdateViewModel(operation){
+			$.post(operation)
 			.done(function(data) {
 				updateViewModelWithJsonData(data);
 				updateGameWonLostBanner();
@@ -109,16 +119,16 @@
 					$('body').keydown(function(e){
 					    switch (e.which) {
 					        case 40:
-					            makeRestCallAndUpdateViewModel("/moveDown");
+					            postAndUpdateViewModel("/move/Down");
 					            break;
 					        case 38:
-					            makeRestCallAndUpdateViewModel("/moveUp");
+					            postAndUpdateViewModel("/move/Up");
 					            break;
 					        case 37:
-					            makeRestCallAndUpdateViewModel("/moveLeft");
+					            postAndUpdateViewModel("/move/Left");
 					            break;
 					        case 39:
-					            makeRestCallAndUpdateViewModel("/moveRight");
+					            postAndUpdateViewModel("/move/Right");
 					            break;
 					        }      
 					});

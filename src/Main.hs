@@ -3,45 +3,44 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-module Main where
+{-# LANGUAGE ViewPatterns          #-}
 
 -- TODO: Combine newGame and moveX handlers usage of modify/swap?
--- TODO: Parameterise moveX instead of having 4 different methods
 -- TODO: defaultGame doesn't really make any sense, since we overwrite it with newGame?
--- TODO: Move/New really should be POST?
 -- TODO: AI competitor
 -- TODO: can we make the static routes just work? with Heroku?
 -- TODO: Mobile friendly arrow keys - touch swipe
 -- TODO: Performance test with some bots - lets see how many clients we can have!
 
+module Main where
+
+import Prelude hiding (Up, Down, Left, Right)   -- GameModel.Direction uses these
 import System.Random
-import GameModel
-import GameModel as GM
-import Logic
-import Paths_Haskell2048
 import System.Environment
 import Yesod
-import Control.Concurrent
 import Control.Concurrent.STM
-import Data.Map (Map)
-import qualified Data.Map as Map
 import Data.Maybe
-import Data.Text (Text, pack)
+import Data.Text
 import qualified Data.Text as Text
 
-data App = App (TVar Int) (TVar [(Text, TVar GameState)])
+import Paths_Haskell2048 -- For Cabal Data file location stuff
+import GameModel
+import Logic
+
+----------------------------------------------------------------------------------
+
+type GameEntry = (Text, TVar GameState)
+data App = App (TVar Int) (TVar [GameEntry])
 
 mkYesod "App" [parseRoutes|
 /               HomeR GET 
-/moveLeft       MoveLeftR GET 
-/moveRight      MoveRightR GET 
-/moveUp         MoveUpR GET 
-/moveDown       MoveDownR GET 
-/newGame        NewGameR GET 
+/move/#Text     MoveR POST 
+/newGame        NewGameR POST
 /favicon.ico    FaviconR GET 
 /stylesheet.css StylesheetR GET 
 /gameState      GameStateR GET 
 |] 
+
 
 instance Yesod App where
   -- Make the session timeout 1 minute so that it's easier to play with or a day...
@@ -66,8 +65,6 @@ getStylesheetR = do
   sendFile "text/css" foo
 
 ---------------------------------------------------------------
---  defaultLayout [whamlet||]
---getHomeR  = defaultLayout [whamlet|<a href=@{Page1R}>Go to page 1!|] 
 
 getNextId :: App -> STM Int
 getNextId (App tnextId _) = do
@@ -123,20 +120,15 @@ getGameStateR = do
   game <- getGameState
   returnJson (game :: GameState)
 
-getMoveLeftR :: Handler Value
-getMoveLeftR = doMoveR GM.Left
+postMoveR :: Text -> Handler Value
+postMoveR "Up"    = doMove Up
+postMoveR "Down"  = doMove Down
+postMoveR "Left"  = doMove Left
+postMoveR "Right" = doMove Right
+postMoveR _ = notFound 
 
-getMoveRightR :: Handler Value
-getMoveRightR = doMoveR GM.Right
-
-getMoveUpR :: Handler Value
-getMoveUpR = doMoveR GM.Up
-
-getMoveDownR :: Handler Value
-getMoveDownR = doMoveR GM.Down
-
-doMoveR :: GM.Direction -> Handler Value
-doMoveR dir = do
+doMove :: Direction -> Handler Value
+doMove dir = do
   (gameId, tgame) <- loadTGame
   g <- liftIO newStdGen
   let left = move dir tgame g
@@ -144,15 +136,15 @@ doMoveR dir = do
   liftIO $ atomically $ swapTVar tgame newGame
   getGameStateR
 
-move :: RandomGen g => GM.Direction -> TVar GameState -> g -> IO GameState 
+move :: RandomGen g => Direction -> TVar GameState -> g -> IO GameState 
 move d s g = do 
   current <- readTVarIO s
   let step = stepGame d (randomFloats g) $ current
   delta <- atomically $ swapTVar s step
   return step
 
-getNewGameR :: Handler Value
-getNewGameR = do
+postNewGameR :: Handler Value
+postNewGameR = do
   (gameId, tgame) <- loadTGame
   g <- liftIO newStdGen
   let newGame = startNewGame gameId (randomFloats g)
@@ -161,6 +153,8 @@ getNewGameR = do
 
 randomFloats :: RandomGen g => g -> [Float]
 randomFloats g = randoms (g) :: [Float]
+
+----------------------------------------------------------------------------------
 
 main :: IO ()
 main = do 
