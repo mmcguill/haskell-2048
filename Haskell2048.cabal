@@ -13,7 +13,7 @@ maintainer:          mmcguill@gmail.com
 -- category:            
 build-type:          Simple
 extra-source-files:  README.md
-data-files:          src/static/index.html, src/static/favicon.ico, src/static/stylesheet.css
+data-files:          src/static/index.html, src/static/favicon.ico, src/static/stylesheet.css, src/static/jgestures.min.js
 cabal-version:       >=1.10
 
 executable Haskell2048

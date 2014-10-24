@@ -11,6 +11,8 @@
 	<!-- Knockout Mapping -->
 	<script src='//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.js'></script>
 	
+	<script src='jgestures.min.js'></script>
+
 	<title>2048</title>
 </head>
 
@@ -132,6 +134,11 @@
 					            break;
 					        }      
 					});
+
+					$(document).on("swipedown", function(event) {console.log(event); postAndUpdateViewModel("/move/Down"); });
+					$(document).on("swipeup", function(event) {console.log(event); postAndUpdateViewModel("/move/Up"); });
+					$(document).on("swipeleft", function(event) {console.log(event); postAndUpdateViewModel("/move/Left");});
+					$(document).on("swiperight", function(event) {console.log(event); postAndUpdateViewModel("/move/Right");});
 				}
 		}
 

@@ -11,6 +11,7 @@
 -- TODO: can we make the static routes just work? with Heroku?
 -- TODO: Mobile friendly arrow keys - touch swipe
 -- TODO: Performance test with some bots - lets see how many clients we can have!
+-- TODO: AWSD keys
 
 module Main where
 
@@ -33,12 +34,13 @@ type GameEntry = (Text, TVar GameState)
 data App = App (TVar Int) (TVar [GameEntry])
 
 mkYesod "App" [parseRoutes|
-/               HomeR GET 
-/move/#Text     MoveR POST 
-/newGame        NewGameR POST
-/favicon.ico    FaviconR GET 
-/stylesheet.css StylesheetR GET 
-/gameState      GameStateR GET 
+/                 HomeR GET 
+/move/#Text       MoveR POST 
+/newGame          NewGameR POST
+/favicon.ico      FaviconR GET 
+/stylesheet.css   StylesheetR GET 
+/gameState        GameStateR GET 
+/jgestures.min.js JGesturesMinJsR GET 
 |] 
 
 
@@ -63,6 +65,11 @@ getStylesheetR :: Handler Html
 getStylesheetR = do
   foo <- liftIO $ getDataFileName "src/static/stylesheet.css" 
   sendFile "text/css" foo
+
+getJGesturesMinJsR :: Handler Html
+getJGesturesMinJsR = do
+  foo <- liftIO $ getDataFileName "src/static/jgestures.min.js" 
+  sendFile "application/javascript" foo
 
 ---------------------------------------------------------------
 
