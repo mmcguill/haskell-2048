@@ -167,7 +167,7 @@ main = do
   maybePort <- lookupEnv "PORT"
   let port = fromMaybe "3000" maybePort
 
-  putStrn $ "Haskell2048 started on port " ++ port
+  putStrLn $ "Haskell2048 started on port " ++ port
 
   tident <- atomically $ newTVar 0
   tgames <- atomically $ newTVar []
