@@ -27,7 +27,7 @@
 			</div>
 
 			<div id="grid">
-				<table>
+				<table id="grid-table">
 				    <tbody data-bind="foreach: grid">
 				        <tr data-bind="foreach: $data">
 				            <td data-bind="text: (tile() === '0' ? '' : tile()), style: { backgroundColor: getTileColor(tile()) }"></td>
@@ -35,6 +35,14 @@
 				    </tbody>
 				</table>
 			</div>
+
+			<!-- Game Won / Lost Overlay -->
+
+			<div id="game-won-lost"></div>
+			<span id="game-won-lost-text"></span>
+
+			<!-- ------------------------------ -->
+
 			<div id="game-id" data-bind="text: 'Game ID: ' + gameid()"></div>
 			<div id= "byline">
 				<p>&copy Mark McGuill</p>
@@ -44,7 +52,31 @@
 
 	<script type="text/javascript">
 		var viewModel = null;
+		alignWonLostBanner();
 		updateFromServer();
+
+		function alignWonLostBanner(){
+			var rowPos = $("#grid-table").position();
+			bottomTop = rowPos.top;
+			bottomLeft = rowPos.left;
+			bottomWidth = $("#grid-table").width();
+			bottomHeight = $("#grid-table").height();
+
+			$("#game-won-lost").css({
+			    position: 'absolute',
+			    top: bottomTop,
+			    left: bottomLeft,
+			});
+
+			textHeight = $("#game-won-lost-text").height();
+
+			$("#game-won-lost-text").css({
+			    position: 'absolute',
+			    top: bottomTop + ((bottomHeight / 2) - (textHeight/2)),
+			    left: bottomLeft,
+			    width: bottomWidth
+			});
+		}
 
 		function updateFromServer () {
 			makeRestCallAndUpdateViewModel("/gameState");
@@ -58,6 +90,7 @@
 			$.getJSON(operation)
 			.done(function(data) {
 				updateViewModelWithJsonData(data);
+				updateGameWonLostBanner();
 			}).fail(function() {
 				console.log("Problem getting update from server for [" + operation + "] operation...");
 			});
@@ -92,6 +125,25 @@
 				}
 		}
 
+		function updateGameWonLostBanner(){
+			alignWonLostBanner();
+
+			if(viewModel.gameProgress() === "GameOver"){
+				// console.log("Game is over!");
+				$("#game-won-lost-text").text("Game Over!");
+				$("#game-won-lost").show();
+				$("#game-won-lost-text").show();
+			}
+			else if(viewModel.gameProgress() === "Won"){
+				$("#game-won-lost-text").text("You Win!");
+				$("#game-won-lost").show();
+				$("#game-won-lost-text").show();
+			}
+			else{
+				$("#game-won-lost-text").hide();
+				$("#game-won-lost").hide();
+			}
+		}
 		function getTileColor(tile){
 			//console.log(tile);
         	if(tile == 2) 			{ return "rgb(238,228,218)"; }

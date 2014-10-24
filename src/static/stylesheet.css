@@ -98,6 +98,21 @@ td {
 	padding-bottom: 2px;
 }
 
+#game-won-lost
+{
+	opacity: 0.5;
+	background-color: white;
+	width: 500px;
+	height: 500px;
+}
+
+#game-won-lost-text
+{
+	font-size: 50pt;
+	font-weight: bold;
+	text-align: center;
+}
+
 #grid {
 	margin-top: 40px;
 	background-color: #bbad9f;

@@ -9,10 +9,10 @@ module Main where
 -- TODO: Parameterise moveX instead of having 4 different methods
 -- TODO: defaultGame doesn't really make any sense, since we overwrite it with newGame?
 -- TODO: Move/New really should be POST?
--- TODO: Game won/lost/over screen
 -- TODO: AI competitor
--- TODO can we make the static routes just work? with Heroku?
+-- TODO: can we make the static routes just work? with Heroku?
 -- TODO: Mobile friendly arrow keys - touch swipe
+-- TODO: Performance test with some bots - lets see how many clients we can have!
 
 import System.Random
 import GameModel
@@ -29,7 +29,6 @@ import Data.Maybe
 import Data.Text (Text, pack)
 import qualified Data.Text as Text
 
-
 data App = App (TVar Int) (TVar [(Text, TVar GameState)])
 
 mkYesod "App" [parseRoutes|
@@ -43,7 +42,6 @@ mkYesod "App" [parseRoutes|
 /stylesheet.css StylesheetR GET 
 /gameState      GameStateR GET 
 |] 
-
 
 instance Yesod App where
   -- Make the session timeout 1 minute so that it's easier to play with or a day...
@@ -167,7 +165,9 @@ randomFloats g = randoms (g) :: [Float]
 main :: IO ()
 main = do 
   maybePort <- lookupEnv "PORT"
-  let port = fromMaybe "3048" maybePort
+  let port = fromMaybe "3000" maybePort
+
+  putStrn $ "Haskell2048 started on port " ++ port
 
   tident <- atomically $ newTVar 0
   tgames <- atomically $ newTVar []
