@@ -14,7 +14,6 @@ import GameModel as GM
 import Logic
 import Data.Text.Lazy
 import Control.Concurrent
-import Paths_Haskell2048
 import System.Environment
 import Data.Maybe (fromMaybe)
 
@@ -75,12 +74,12 @@ main = do
     -- Static File Serving
 
     get "/" $ do 
-      foo <- liftIO $ getDataFileName "src/static/index.html"  
+      let foo = "static/index.html"  
       setHeader "Content-Type" "text/html; charset=utf-8"
       file foo
     
     get "/favicon.ico" $ do
-      foo <- liftIO $ getDataFileName "src/static/favicon.ico"  
+      let foo = "static/favicon.ico"  
       setHeader "Content-Type" "image/x-icon"
       file foo
     
