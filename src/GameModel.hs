@@ -10,7 +10,6 @@ import Data.Text (Text, pack)
 import qualified Data.Text as Text
 
 data Tile = Num Int | Empty deriving (Eq, Show, Generic) -- a tile can either contain an int, or be empty
-
 instance ToJSON Tile where
  toJSON x = object [ "tile" .= (show $ tileToInt x)]
 instance FromJSON Tile
@@ -30,11 +29,10 @@ data GameState = GameState { -- defines the various properties of a game state:
   , gameProgress :: Progress  -- the progress of the game (in progress, 
                             -- game over etc.)
 } deriving (Eq, Show, Generic)
-
 instance FromJSON GameState
 instance ToJSON GameState
 
-data Direction = Up | Down | Left | Right | None deriving (Eq, Show, Generic) -- the direction to shift 
+data Direction = Up | Down | Left | Right | None deriving (Eq, Show) -- the direction to shift 
                                                  -- the grid
 
 gridSize :: Int -- the length of the sides of the grid

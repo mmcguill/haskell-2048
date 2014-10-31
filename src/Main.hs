@@ -1,17 +1,11 @@
-{-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE QuasiQuotes           #-}
-{-# LANGUAGE TemplateHaskell       #-}
-{-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE ViewPatterns          #-}
+{-# LANGUAGE OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, ViewPatterns #-}
 
+-- TODO: Mobile friendly arrow keys - touch swipe
 -- TODO: Combine newGame and moveX handlers usage of modify/swap?
 -- TODO: defaultGame doesn't really make any sense, since we overwrite it with newGame?
 -- TODO: AI competitor
 -- TODO: can we make the static routes just work? with Heroku?
--- TODO: Mobile friendly arrow keys - touch swipe
 -- TODO: Performance test with some bots - lets see how many clients we can have!
--- TODO: AWSD keys
 
 module Main where
 
@@ -45,16 +39,14 @@ mkYesod "App" [parseRoutes|
 
 
 instance Yesod App where
-  -- Make the session timeout 1 minute so that it's easier to play with or a day...
   makeSessionBackend _ = do
     backend <- defaultClientSessionBackend 1440 "session.aes"
     return $ Just backend
 
 getHomeR :: Handler Html
 getHomeR = do
-           foo <- liftIO $ getDataFileName "src/static/index.html" 
-           dummy <- liftIO $ putStrLn foo
-           sendFile "text/html; charset=utf-8" foo
+  foo <- liftIO $ getDataFileName "src/static/index.html" 
+  sendFile "text/html; charset=utf-8" foo
 
 getFaviconR :: Handler Html
 getFaviconR = do
@@ -104,16 +96,16 @@ getById ident = do
 
 loadTGame :: Handler (Text, TVar GameState)
 loadTGame = do
-  app <- getYesod
   gameId <- lookupSession "gameId"
   case gameId of
     Just gid -> do
-      tgame <- (getById gid)
+      tgame <- getById gid
       return (gid, tgame)
     Nothing  -> do
+      app <- getYesod
       key <- addGame app
       setSession "gameId" key
-      tgame <- (getById key)
+      tgame <- getById key
       return (key, tgame)
 
 getGameState :: Handler GameState
@@ -173,5 +165,3 @@ main = do
   tident <- atomically $ newTVar 0
   tgames <- atomically $ newTVar []
   warp (read(port)) (App tident tgames)
-
-   

@@ -1,4 +1,4 @@
-4{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
@@ -18,10 +18,6 @@ import Paths_Haskell2048
 import System.Environment
 import Data.Maybe (fromMaybe)
 
-
-f $ g x
-
-
 randomFloats :: RandomGen g => g -> [Float]
 randomFloats g = randoms (g) :: [Float]
 
@@ -36,7 +32,7 @@ main :: IO ()
 main = do 
   s <- newMVar defaultGame
   x <- lookupEnv "PORT"
-  let port = fromMaybe "3400" x
+  let port = fromMaybe "3000" x
 
   putStrLn "Starting Haskell2048!!"
 
@@ -44,7 +40,7 @@ main = do
     middleware logStdoutDev
 
     get "/gameState" $ do 
-      x <- liftIO $ takeMVar 
+      x <- liftIO $ takeMVar s
       liftIO $ putMVar s x
       json $ (x :: GameState)
 
