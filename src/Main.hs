@@ -1,8 +1,6 @@
 {-# LANGUAGE OverloadedStrings, QuasiQuotes, TemplateHaskell, TypeFamilies, ViewPatterns #-}
 
 -- TODO: Mobile friendly arrow keys - touch swipe
--- TODO: Combine newGame and moveX handlers usage of modify/swap?
--- TODO: defaultGame doesn't really make any sense, since we overwrite it with newGame?
 -- TODO: AI competitor
 -- TODO: can we make the static routes just work? with Heroku?
 -- TODO: Performance test with some bots - lets see how many clients we can have!
@@ -17,6 +15,8 @@ import Control.Concurrent.STM
 import Data.Maybe
 import Data.Text
 import qualified Data.Text as Text
+import Data.Map
+import qualified Data.Map as Map
 
 import Paths_Haskell2048 -- For Cabal Data file location stuff
 import GameModel
@@ -24,8 +24,7 @@ import Logic
 
 ----------------------------------------------------------------------------------
 
-type GameEntry = (Text, TVar GameState)
-data App = App (TVar Int) (TVar [GameEntry])
+data App = App (TVar Int) (TVar (Map Text GameState))
 
 mkYesod "App" [parseRoutes|
 /                 HomeR GET 
@@ -65,58 +64,39 @@ getJGesturesMinJsR = do
 
 ---------------------------------------------------------------
 
-getNextId :: App -> STM Int
-getNextId (App tnextId _) = do
-  nextId <- readTVar tnextId
-  writeTVar tnextId $ nextId + 1
-  return nextId
+getNextId :: App -> IO Int
+getNextId (App tnextId _) = atomically $ do
+  modifyTVar tnextId (+1)
+  readTVar tnextId
 
 getNextIdAsText :: App -> Handler Text
 getNextIdAsText app = do
-  ident <- liftIO $ atomically $ getNextId app
-  let key = pack $ show ident
-  return key 
+  ident <- liftIO $ getNextId app
+  return $ pack $ show ident
 
-addGame :: App -> Handler Text
-addGame app@(App _ tstore) = do
-    key <- getNextIdAsText app
-    tgame <- liftIO $ atomically $ newTVar (defaultGame key)
-    let entry = (key, tgame)
-    liftIO . atomically $ do
-        modifyTVar tstore $ \ ops -> entry : ops
-    return $ fst entry
-
-getById :: Text -> Handler (TVar GameState)
+getById :: Text -> Handler GameState
 getById ident = do
     App _ tstore <- getYesod
-    operations <- liftIO $ readTVarIO tstore
-    case lookup ident operations of
+    games <- liftIO $ readTVarIO tstore
+    case Map.lookup ident games of
       Nothing -> notFound
       Just game -> return game
 
-loadTGame :: Handler (Text, TVar GameState)
-loadTGame = do
+loadGame :: Handler (Text, GameState)
+loadGame = do
   gameId <- lookupSession "gameId"
   case gameId of
     Just gid -> do
-      tgame <- getById gid
-      return (gid, tgame)
+      game <- getById gid
+      return (gid, game)
     Nothing  -> do
-      app <- getYesod
-      key <- addGame app
+      (key, game) <- createNewGame
       setSession "gameId" key
-      tgame <- getById key
-      return (key, tgame)
-
-getGameState :: Handler GameState
-getGameState = do
-  (_, tgame) <- loadTGame
-  game <- liftIO $ readTVarIO $ tgame 
-  return game
+      return (key, game)
   
 getGameStateR :: Handler Value
 getGameStateR = do
-  game <- getGameState
+  (_, game) <- loadGame
   returnJson (game :: GameState)
 
 postMoveR :: Text -> Handler Value
@@ -127,28 +107,35 @@ postMoveR "Right" = doMove Right
 postMoveR _ = notFound 
 
 doMove :: Direction -> Handler Value
-doMove dir = do
-  (gameId, tgame) <- loadTGame
-  g <- liftIO newStdGen
-  let left = move dir tgame g
-  newGame <- liftIO left
-  liftIO $ atomically $ swapTVar tgame newGame
-  getGameStateR
+doMove direction = do
+  (gameId, game) <- loadGame
+  rndGen <- liftIO newStdGen
+  let delta = stepGame direction (randomFloats rndGen) $ game
+  setGameStateForGameId gameId delta
+  returnJson delta
 
-move :: RandomGen g => Direction -> TVar GameState -> g -> IO GameState 
-move d s g = do 
-  current <- readTVarIO s
-  let step = stepGame d (randomFloats g) $ current
-  delta <- atomically $ swapTVar s step
-  return step
+setGameStateForGameId :: Text -> GameState -> Handler ()
+setGameStateForGameId gameId gameState = do
+  App _ tgames <- getYesod
+  liftIO $ atomically $ do
+    games <- readTVar tgames
+    let newMap = Map.insert gameId gameState games
+    swapTVar tgames newMap
+  return ()
+
+createNewGame :: Handler (Text, GameState)
+createNewGame = do
+  app <- getYesod
+  gameId <- getNextIdAsText app
+  g <- liftIO newStdGen
+  let newGame = startNewGame gameId (randomFloats g)
+  setGameStateForGameId gameId newGame
+  return (gameId, newGame)
 
 postNewGameR :: Handler Value
 postNewGameR = do
-  (gameId, tgame) <- loadTGame
-  g <- liftIO newStdGen
-  let newGame = startNewGame gameId (randomFloats g)
-  liftIO $ atomically $ swapTVar tgame newGame
-  getGameStateR
+  (gameId, gameState) <- createNewGame
+  returnJson gameState
 
 randomFloats :: RandomGen g => g -> [Float]
 randomFloats g = randoms (g) :: [Float]
@@ -163,5 +150,5 @@ main = do
   putStrLn $ "Haskell2048 started on port " ++ port
 
   tident <- atomically $ newTVar 0
-  tgames <- atomically $ newTVar []
+  tgames <- atomically $ newTVar Map.empty
   warp (read(port)) (App tident tgames)
