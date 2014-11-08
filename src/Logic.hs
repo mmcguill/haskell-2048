@@ -159,16 +159,18 @@ newGame gid input =
 startNewGame :: Text -> [Float] -> GameState
 startNewGame gid r = newGame gid r
 
-stepGame :: Direction -> [Float] -> GameState -> GameState -- game stepper that is called every
-                                           -- time the input changes
+stepGame :: Direction -> [Float] -> GameState -> GameState -- game stepper that is called every time the input changes
 stepGame direction r gameState =
 	if(gameProgress gameState) /= InProgress then gameState else
 		if (gameWon (grid gameState)) then win gameState else 
         	if(gameLost (grid gameState)) then lose gameState else 
         		if(direction /= None) then let pushedState = slideGameState direction gameState -- then try to push 
                 in if (pushedState == gameState) then gameState 
-                    else placeRandomTile 
-                        (r !! 0) -- and if it has, place a new
-                        (r !! 1) -- random tile
-                        pushedState
+                    else let newState = placeRandomTile (r !! 0) (r !! 1) pushedState 
+                      in  if (gameWon (grid newState)) then win newState 
+                          else 
+                            if(gameLost (grid newState)) then lose newState 
+                            else newState 
         		else gameState
+
+

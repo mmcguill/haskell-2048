@@ -11,8 +11,6 @@
 	<!-- Knockout Mapping -->
 	<script src='//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.js'></script>
 	
-	<script src='jgestures.min.js'></script>
-
 	<title>2048</title>
 </head>
 
@@ -120,33 +118,20 @@
 
 				$('body').keydown(function(e){
 				    switch (e.which) {
-			        case 40:  
-			        case 115: // s
-			        case 83:  // S
+			        case 40: case 115: case 83: 
 			            postAndUpdateViewModel("/move/Down");
 			            break;
-			        case 38:
-			        case 119: // w
-			        case 87:  // W
+			        case 38: case 119: case 87:  
 			            postAndUpdateViewModel("/move/Up");
 			            break;
-			        case 37:
-			        case 97: // a
-			        case 65: // A
+			        case 37: case 97: case 65: 
 			            postAndUpdateViewModel("/move/Left");
 			            break;
-			        case 39:
-			        case 100: // d
-			        case 68:  // D
+			        case 39: case 100: case 68:  
 			            postAndUpdateViewModel("/move/Right");
 			            break;
 				    }      
 				});
-
-				$(document).on("swipedown", function(event) {alert('D'); postAndUpdateViewModel("/move/Down"); });
-				$(document).on("swipeup", function(event) 	{alert('U'); postAndUpdateViewModel("/move/Up"); });
-				$(document).on("swipeleft", function(event) {alert('L'); postAndUpdateViewModel("/move/Left");});
-				$(document).on("swiperight", function(event){alert('R'); postAndUpdateViewModel("/move/Right");});
 			}
 		}
 
