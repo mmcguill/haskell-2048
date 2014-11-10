@@ -23,7 +23,8 @@
 					<div id="score">SCORE</br /><span data-bind="text: score"></span></div>
 					<div id="newGameButton" data-bind="click: startNewGame">New Game</div>
 				</div>
-				<p id="description">Join the numbers and get to the 2048 tile!</p>
+				<p id="description">Join the numbers and get to the 2048 tile!<br />
+				<span id="game-id" data-bind="text: 'Game: ' + gameid()"></span></p>
 			</div>
 
 			<div id="grid">
@@ -43,11 +44,9 @@
 
 			<!-- ------------------------------ -->
 
-			<div id="game-id" data-bind="text: 'Game: ' + gameid()"></div>
 			<div id= "byline">
-				<p>A blog post about this game can be found <a href="http://jumboeats.wordpress.com/2014/11/10/haskell2048/">here</a>.</p>
-				<p><a href="mailto:mmcguill@gmail.com">Contact the Author</a></p>
-				<p>&copy; Mark McGuill</p>
+				<p>A blog post about this game can be found <a href="http://jumboeats.wordpress.com/2014/11/10/haskell2048/">here</a>.<br />
+				&copy; Mark McGuill</p>
 			</div>
 		</div>
 	</div>
@@ -99,15 +98,23 @@
 				    switch (e.which) {
 			        case 40: case 115: case 83: 
 			            postAndUpdateViewModel("/move/Down");
+			            e.preventDefault();
+          				return false;
 			            break;
 			        case 38: case 119: case 87:  
 			            postAndUpdateViewModel("/move/Up");
+			            e.preventDefault();
+          				return false;
 			            break;
 			        case 37: case 97: case 65: 
 			            postAndUpdateViewModel("/move/Left");
+			            e.preventDefault();
+          				return false;
 			            break;
 			        case 39: case 100: case 68:  
 			            postAndUpdateViewModel("/move/Right");
+			            e.preventDefault();
+          				return false;
 			            break;
 				    }      
 				});
