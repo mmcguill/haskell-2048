@@ -57,6 +57,32 @@ getStylesheetR = do
   sendFile "text/css" foo
 
 ------------------------------------------------------------------------------------
+  
+getGameStateR :: Handler Value
+getGameStateR = do
+  existing <- getGameForSession 
+  case existing of
+    Just (_, game) -> returnJson game
+    Nothing -> returnJson (defaultGame "0")
+
+postMoveR :: Text -> Handler Value
+postMoveR "Up"    = move Up
+postMoveR "Down"  = move Down
+postMoveR "Left"  = move Left
+postMoveR "Right" = move Right
+postMoveR _ = notFound 
+
+move :: Direction -> Handler Value
+move direction = do
+  app@(App tIdCounter tGamesMap) <- getYesod
+  existing <- getGameForSession 
+  case existing of
+    Just (gameId, game) -> do
+      rndGen <- liftIO newStdGen
+      let delta = stepGame direction (randomFloats rndGen) $ game
+      liftIO $ setGameStateForGameId tGamesMap gameId delta
+      returnJson delta
+    Nothing -> notFound
 
 getGameForSession :: Handler (Maybe (Text, GameState))
 getGameForSession = do
@@ -69,32 +95,8 @@ getGameForSession = do
         Just game -> return $ Just (gid, game)
         Nothing -> return Nothing
     Nothing  -> return Nothing
-  
-getGameStateR :: Handler Value
-getGameStateR = do
-  existing <- getGameForSession 
-  case existing of
-    Just (_, game) -> returnJson game
-    Nothing -> returnJson (defaultGame "0")
 
-postMoveR :: Text -> Handler Value
-postMoveR "Up"    = doMove Up
-postMoveR "Down"  = doMove Down
-postMoveR "Left"  = doMove Left
-postMoveR "Right" = doMove Right
-postMoveR _ = notFound 
 
-doMove :: Direction -> Handler Value
-doMove direction = do
-  app@(App tIdCounter tGamesMap) <- getYesod
-  existing <- getGameForSession 
-  case existing of
-    Just (gameId, game) -> do
-      rndGen <- liftIO newStdGen
-      let delta = stepGame direction (randomFloats rndGen) $ game
-      liftIO $ setGameStateForGameId tGamesMap gameId delta
-      returnJson delta
-    Nothing -> notFound
   
 postNewGameR :: Handler Value
 postNewGameR = do
