@@ -55,29 +55,6 @@
 		alignWonLostBanner();
 		updateFromServer();
 
-		function alignWonLostBanner(){
-			var rowPos = $("#grid-table").position();
-			bottomTop = rowPos.top;
-			bottomLeft = rowPos.left;
-			bottomWidth = $("#grid-table").width();
-			bottomHeight = $("#grid-table").height();
-
-			$("#game-won-lost").css({
-			    position: 'absolute',
-			    top: bottomTop,
-			    left: bottomLeft,
-			});
-
-			textHeight = $("#game-won-lost-text").height();
-
-			$("#game-won-lost-text").css({
-			    position: 'absolute',
-			    top: bottomTop + ((bottomHeight / 2) - (textHeight/2)),
-			    left: bottomLeft,
-			    width: bottomWidth
-			});
-		}
-
 		function updateFromServer () {
 			getAndUpdateViewModel("/gameState");
 		}
@@ -136,8 +113,6 @@
 		}
 
 		function updateGameWonLostBanner(){
-			alignWonLostBanner();
-
 			if(viewModel.gameProgress() === "GameOver"){
 				// console.log("Game is over!");
 				$("#game-won-lost-text").text("Game Over!");
@@ -149,11 +124,42 @@
 				$("#game-won-lost").show();
 				$("#game-won-lost-text").show();
 			}
+			else if(viewModel.gameid() === "0"){
+				$("#game-won-lost-text").html("Click<br />New Game<br />to Begin");
+				$("#game-won-lost").show();
+				$("#game-won-lost-text").show();
+			}
 			else{
 				$("#game-won-lost-text").hide();
 				$("#game-won-lost").hide();
 			}
+
+			alignWonLostBanner();
 		}
+
+		function alignWonLostBanner(){
+			var rowPos = $("#grid-table").position();
+			bottomTop = rowPos.top;
+			bottomLeft = rowPos.left;
+			bottomWidth = $("#grid-table").width();
+			bottomHeight = $("#grid-table").height();
+
+			$("#game-won-lost").css({
+			    position: 'absolute',
+			    top: bottomTop,
+			    left: bottomLeft,
+			});
+
+			textHeight = $("#game-won-lost-text").height();
+
+			$("#game-won-lost-text").css({
+			    position: 'absolute',
+			    top: bottomTop + ((bottomHeight / 2) - (textHeight/2)),
+			    left: bottomLeft,
+			    width: bottomWidth
+			});
+		}
+
 		function getTileColor(tile){
 			//console.log(tile);
         	if(tile == 2) 			{ return "rgb(238,228,218)"; }

@@ -58,32 +58,24 @@ getStylesheetR = do
 
 ------------------------------------------------------------------------------------
 
-createNewGame :: Handler (Text, GameState)
-createNewGame = do
-  app@(App tIdCounter tGamesMap) <- getYesod
-  gameId <- liftIO $ getNextIdAsText tIdCounter
-  g <- liftIO newStdGen
-  let newGame = startNewGame gameId (randomFloats g)
-  liftIO $ setGameStateForGameId tGamesMap gameId newGame
-  setSession "gameId" gameId
-  return (gameId, newGame)
-
-loadGame :: Handler (Text, GameState)
-loadGame = do
+getGameForSession :: Handler (Maybe (Text, GameState))
+getGameForSession = do
   app@(App tIdCounter tGamesMap) <- getYesod
   gameId <- lookupSession "gameId"
   case gameId of
     Just gid -> do
       existing <- liftIO $ getById tGamesMap gid
       case existing of
-        Just game -> return (gid, game)
-        Nothing -> createNewGame
-    Nothing  -> createNewGame
+        Just game -> return $ Just (gid, game)
+        Nothing -> return Nothing
+    Nothing  -> return Nothing
   
 getGameStateR :: Handler Value
 getGameStateR = do
-  (_, game) <- loadGame
-  returnJson game
+  existing <- getGameForSession 
+  case existing of
+    Just (_, game) -> returnJson game
+    Nothing -> returnJson (defaultGame "0")
 
 postMoveR :: Text -> Handler Value
 postMoveR "Up"    = doMove Up
@@ -95,16 +87,29 @@ postMoveR _ = notFound
 doMove :: Direction -> Handler Value
 doMove direction = do
   app@(App tIdCounter tGamesMap) <- getYesod
-  (gameId, game) <- loadGame
-  rndGen <- liftIO newStdGen
-  let delta = stepGame direction (randomFloats rndGen) $ game
-  liftIO $ setGameStateForGameId tGamesMap gameId delta
-  returnJson delta
-
+  existing <- getGameForSession 
+  case existing of
+    Just (gameId, game) -> do
+      rndGen <- liftIO newStdGen
+      let delta = stepGame direction (randomFloats rndGen) $ game
+      liftIO $ setGameStateForGameId tGamesMap gameId delta
+      returnJson delta
+    Nothing -> notFound
+  
 postNewGameR :: Handler Value
 postNewGameR = do
   (gameId, gameState) <- createNewGame
   returnJson gameState
+
+createNewGame :: Handler (Text, GameState)
+createNewGame = do
+  app@(App tIdCounter tGamesMap) <- getYesod
+  gameId <- liftIO $ getNextIdAsText tIdCounter
+  g <- liftIO newStdGen
+  let newGame = startNewGame gameId (randomFloats g)
+  liftIO $ setGameStateForGameId tGamesMap gameId newGame
+  setSession "gameId" gameId
+  return (gameId, newGame)
 
 ----------------------------------------------------------------------------------
 
