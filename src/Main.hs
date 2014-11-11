@@ -16,6 +16,7 @@ import Data.Text
 import qualified Data.Text as Text
 import Data.Map
 import qualified Data.Map as Map
+import Control.Applicative
 
 import Paths_Haskell2048 -- For Cabal Data file location stuff
 import GameModel
@@ -90,14 +91,10 @@ getGameForSession = do
   gameId <- lookupSession "gameId"
   case gameId of
     Just gid -> do
-      existing <- liftIO $ getById tGamesMap gid
-      case existing of
-        Just game -> return $ Just (gid, game)
-        Nothing -> return Nothing
+      existing <- liftIO $ getById tGamesMap gid 
+      return $ fmap (\x -> (gid, x)) existing
     Nothing  -> return Nothing
 
-
-  
 postNewGameR :: Handler Value
 postNewGameR = do
   (gameId, gameState) <- createNewGame
